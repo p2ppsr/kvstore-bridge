@@ -10,5 +10,5 @@ PUSHDATA | Field
 2        | Bitcom Protocol Namespace Address (\`13vGYFqfJsFYaA3mheYgPKuishLG7sYDaE\`)
 3        | Encrypted KVStore key
 4        | KVStore value
-5        | A signature from the field 0 public key over fields 2-15
+5        | A signature from the field 0 public key over fields 2-5
 ...      | `OP_DROP` / `OP_2DROP` — Drop fields 2-5 from the stack.
