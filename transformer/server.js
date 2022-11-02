@@ -1,0 +1,10 @@
+require('dotenv').config()
+const express = require('express')
+const bodyparser = require('body-parser')
+const app = express()
+const { transformer } = require('./src/index')
+app.use(bodyparser.json())
+app.use(transformer)
+app.listen(process.env.PORT || 8080, () => {
+  console.log('Transformer listening')
+})

@@ -1,0 +1,15 @@
+{
+    "bridgeport": "0.2.0",
+    "id": "",
+    "name": "KVStore Protocol",
+    "description": "A simple, un-permissioned key-value storage and retrieval system",
+    "version": "1.0.0",
+    "reader": {
+      "runtime": "nodejs14",
+      "directory": "./reader"
+    },
+    "transformer": {
+      "runtime": "nodejs14",
+      "directory": "./transformer"
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "main": "src/index.js",
+    "scripts": {
+        "start": "node src/index.js"
+    },
+    "private": true,
+    "devDependencies": {
+        "nodemon": "^2.0.12",
+        "standard": "^16.0.3"
+    },
+    "dependencies": {
+        "bitquery-mongo-reader": "^0.1.0"
+    }
+}

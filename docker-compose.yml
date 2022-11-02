@@ -1,0 +1,106 @@
+#####
+### Project Babbage — Services for Local Development
+#####
+version: '3.8'
+
+services:
+  # The Bridgeport Connecticut Proxy
+  connecticut:
+    # build: ../connecticut
+    image: us.gcr.io/computing-with-integrity/connecticut:master-60a7cb0e489b6e21aa97111aee16a67f7488800e
+    ports:
+      - "3103:3103"
+    environment:
+      HTTP_PORT: 3103
+      PORT: 3103
+      # PASSTHROUGH_BRIDGES: '["1H48C3wg1YcgpT7Tx61PHzH8Lx6v5tVUKL"]' # if you need UMP  
+      # PASSTHROUGH_URL: "https://staging-bridgeport.babbage.systems"
+      # PASSTHROUGH_SYSTEM_BRIDGES: true
+      # PASSTHROUGH_LOGGING: true
+      # DISABLE_UHRP_MOCKING: true
+
+  ###
+  ## Bridgeport Derived Action Datasets
+  ###
+
+  # MongoDB
+  bridgeport-mongo:
+    image: mongo:5
+    command: |
+      bash -c "mongod --bind_ip_all --replSet rs0 --fork --syslog --port 3113 && mongo --port 3113 --eval \"if (!rs.status().ok) rs.initiate({_id : 'rs0', members : [{_id : 0, host : 'bridgeport-mongo:3113'}]})\" && mongo --port 3113 --eval \"while(true) {if (!rs.status().ok) break;sleep(1000)};\""
+    hostname: "bridgeport-mongo"
+    ports:
+      - 3113:27017
+    volumes:
+     - ./data/bridgeport-mongo-data:/data/db
+
+  # MiniScribe — lightweight local NanoStore
+  miniscribe:
+    image: us.gcr.io/computing-with-integrity/miniscribe
+    ports:
+      - "3104:3104"
+    volumes:
+     - ./data/miniscribe-data:/app/data
+    environment:
+      NODE_ENV: 'development'
+
+  ###
+  ## Debugging Tools — Uncomment when needed
+  ###
+
+  # # Mongo Express — web-based MongoDB database viewer
+  # mongo-express:
+  #   image: mongo-express
+  #   restart: always
+  #   ports:
+  #     - 8081:8081
+  #   environment:
+  #     ME_CONFIG_MONGODB_SERVER: bridgeport-mongo
+  #     ME_CONFIG_MONGODB_PORT: 3113
+  #   depends_on:
+  #     - bridgeport-mongo
+
+  ## PHPMyAdmin — Web-based SQL database viewer
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   links:
+  #   - dojo-mysql
+  #   environment:
+  #     PMA_HOST: dojo-mysql
+  #     PMA_PORT: 3112
+  #     PMA_ARBITRARY: 1
+  #   restart: always
+  #   ports:
+  #   - 8090:80
+
+  ###
+  ## User-defined Bridges and Services — Extend to support your application
+  ## 
+  ## To generate these bridge entries for your application, send a Parapet 
+  ## request to your bridge ID while it is NOT running, and Connecticut will 
+  ## print an error message in the Docker console. Contained in that error 
+  ## message will be the correct docker-compose configuration for your bridge.
+  ##
+  ## Don't copy one of the System Bridges above for your brige, it won't work!
+  ###
+
+  reader-kvstore:
+    hostname: "reader-13vgyfqfjsfyaa3mheygpkuishlg7sydae"
+    build: ./reader
+    environment:
+      BRIDGE: 'eyJpZCI6IjEzdkdZRnFmSnNGWWFBM21oZVlnUEt1aXNoTEc3c1lEYUUifQ=='
+      PORT: 80
+      MONGODB_READ_CREDS: 'bW9uZ29kYjovL2JyaWRnZXBvcnQtbW9uZ286MzExMy9icmlkZ2VfMTN2R1lGcWZKc0ZZYUEzbWhlWWdQS3Vpc2hMRzdzWURhRQ=='
+      MONGODB_DATABASE: 'bridge_13vGYFqfJsFYaA3mheYgPKuishLG7sYDaE'
+  transformer-kvstore:
+    hostname: "transformer-13vgyfqfjsfyaa3mheygpkuishlg7sydae"
+    build: ./transformer
+    # command: npx nodemon --watch src --inspect=0.0.0.0 server.js
+    # volumes:
+    #   - ./transformer/src:/app/src
+    environment:
+      PORT: 80
+      MONGODB_WRITE_CREDS: 'mongodb://bridgeport-mongo:3113/bridge_13vGYFqfJsFYaA3mheYgPKuishLG7sYDaE'
+      MONGODB_DATABASE: 'bridge_13vGYFqfJsFYaA3mheYgPKuishLG7sYDaE'
+    # ports:
+    #   - 9876:9229
